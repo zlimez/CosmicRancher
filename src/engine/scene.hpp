@@ -12,5 +12,7 @@ private:
 
 public:
     void load();
+    void update();
+    void draw();
     void unload();
 };

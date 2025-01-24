@@ -3,11 +3,12 @@
 #include "engine/game.hpp"
 #include "engine/time.hpp"
 
-int main(int argc, char *argv[])
+int main()
 {
     Game game;
-    game.init("Cosmic Rancher", 800, 600, false);
+    game.init("Cosmic Rancher", 1440, 840, false);
     Uint32 lastTime = SDL_GetTicks();
+
     while (game.isRunning())
     {
         game.handleEvents();

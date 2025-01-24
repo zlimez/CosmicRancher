@@ -1,21 +1,25 @@
 #pragma once
 
-#include <string>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_render.h>
-#include "scene.hpp" // Add the necessary include path for the "scene.hpp" header file.
+#include <vector>
+// #include "scene.hpp"
 
 class Game
 {
 private:
     bool running;
     SDL_Window *window;
-    SDL_Renderer *renderer;
-    Scene *activeScene;
+    std::vector<std::vector<int>> map;
+    SDL_Texture *texture1, *texture2, *texture3;
+    SDL_Rect src, dst;
+    // Scene *activeScene;
 
 public:
     Game();
-    ~Game() {}
+    ~Game() {};
+
+    static SDL_Renderer *renderer;
 
     void init(const char *title, int width, int height, bool fullscreen);
     void handleEvents();

@@ -1,10 +1,24 @@
 #pragma once
 
 #include "transform.hpp"
-#include "component.hpp"
 #include "id_pool.hpp"
 #include <vector>
 #include <memory>
+
+class GameObject;
+class Component;
+
+class Component
+{
+public:
+    GameObject *gameObject;
+    Transform *transform;
+
+    virtual ~Component() {}
+    virtual void start();
+    virtual void update();
+    virtual void destroy();
+};
 
 class GameObject
 {
@@ -14,7 +28,7 @@ private:
 
 public:
     Transform transform;
-    std::vector<std::shared_ptr<Component>> components;
+    std::vector<std::unique_ptr<Component>> components;
 
     GameObject()
     {
@@ -26,12 +40,10 @@ public:
         idPool.releaseId(id);
     }
 
-    template <typename T>
-    void addComponent(std::shared_ptr<T> component);
+    void addComponent(std::unique_ptr<Component> component);
+    void removeComponent(std::unique_ptr<Component> component);
 
     void start();
     void update();
     void destroy();
 };
-
-IdPool GameObject::idPool;

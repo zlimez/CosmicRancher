@@ -1,12 +1,14 @@
 #include "./game_object.hpp"
 
-template <typename T>
-void GameObject::addComponent(std::shared_ptr<T> component)
+void GameObject::addComponent(std::unique_ptr<Component> component)
 {
-    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
-    component->gameObject = shared_from_this();
+    component->gameObject = this;
     component->transform = &transform;
-    components.push_back(component);
+    components.push_back(std::move(component));
+}
+
+void GameObject::removeComponent(std::unique_ptr<Component> component)
+{
 }
 
 void GameObject::start()
@@ -27,3 +29,5 @@ void GameObject::destroy()
         component->destroy();
     components.clear();
 }
+
+IdPool GameObject::idPool;
