@@ -1,14 +1,9 @@
 #pragma once
 
-#include "system.hpp"
 #include <vector>
 #include <memory>
 #include <unordered_set>
 #include <random>
-
-class MapGenSystem : public System
-{
-};
 
 class Voronoi
 {
