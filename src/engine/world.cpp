@@ -3,13 +3,6 @@
 // ComponentID is not identical across runs, needs to be handled if serialization is required
 namespace engine
 {
-    template <typename T>
-    uint32_t getComponentID()
-    {
-        static int id = ComponentsRegistry::GetNewID();
-        return id;
-    }
-
     World::World(uint32 expectedEntities, uint32 expectedComponentCnt)
     {
         idPool = IdPool();
@@ -37,59 +30,10 @@ namespace engine
         entityArchetypes[entityId]->removeEntity(entityId);
     }
 
-    template <typename T>
-    void World::addComponent(EntityID entityId)
+    std::vector<Archetype *> &World::getArchetypesWith(Type type)
     {
-        ComponentID componentId = GetComponentID<T>();
-        if (entityArchetypes[entityId]->type[componentId])
-            return;
-        Type newType = entityArchetypes[entityId]->type, oldType = newType;
-        newType.set(componentId);
-        auto &dstArchetype = archetypes[newType], &srcArchetype = archetypes[oldType];
-        dstArchetype.addEntity();
-        for (ComponentID i = 0; i < newType.size(); i++)
-            if (oldType[i])
-                dstArchetype.copyComponent(entityId, i, srcArchetype.getComponent(entityId, i));
-
-        archetypes[oldType].removeEntity(entityId);
-        entityArchetypes[entityId] = &archetypes[newType];
-    }
-
-    template <typename T>
-    void World::removeComponent(EntityID entityId)
-    {
-        ComponentID componentId = GetComponentID<T>();
-        if (!entityArchetypes[entityId]->type[componentId])
-            return;
-        Type newType = entityArchetypes[entityId]->type, oldType = newType;
-        newType.reset(componentId);
-        auto &dstArchetype = archetypes[newType], &srcArchetype = archetypes[oldType];
-        for (ComponentID i = 0; i < newType.size(); i++)
-            if (newType[i])
-                dstArchetype.copyComponent(entityId, i, srcArchetype.getComponent(entityId, i));
-
-        archetypes[oldType].removeEntity(entityId);
-        entityArchetypes[entityId] = &archetypes[newType];
-    }
-
-    template <typename T>
-    bool World::hasComponent(EntityID entityId)
-    {
-        return entityArchetypes[entityId]->type[GetComponentID<T>()];
-    }
-
-    template <typename T>
-    T &World::getComponent(EntityID entityId)
-    {
-        if (!hasComponent(entityId, GetComponentID<T>()))
-            return nullptr;
-        return entityArchetypes[entityId]->getComponent<T>(entityId);
-    }
-
-    std::vector<Archetype *> World::getArchetypesWithComponents(Type type)
-    {
-        if (archetypesWithComponents.find(type) != archetypesWithComponents.end())
-            return archetypesWithComponents[type];
+        if (archetypesWith.find(type) != archetypesWith.end())
+            return archetypesWith[type];
         std::vector<Archetype *> superTypes;
         superTypes.push_back(&archetypes[type]);
         auto minusOne = [](Type type)
@@ -110,19 +54,20 @@ namespace engine
             superTypes.push_back(&archetypes[subset | type]);
             subset = (mask & minusOne(subset));
         }
-        archetypesWithComponents[type] = superTypes;
-        return superTypes;
+        archetypesWith[type] = std::move(superTypes);
+        return archetypesWith[type];
     }
 
-    std::vector<EntityID> World::getEntitiesWithComponents(Type type)
+    // TODO: When entities are destroyed or change archetypes, cache should be invalidated
+    std::vector<EntityID> &World::getEntitiesWith(Type type)
     {
-        if (entitiesWithComponents.find(type) != entitiesWithComponents.end())
-            return entitiesWithComponents[type];
+        if (entitiesWith.find(type) != entitiesWith.end())
+            return entitiesWith[type];
         std::vector<EntityID> entities;
-        for (auto archetype : getArchetypesWithComponents(type))
+        for (auto archetype : getArchetypesWith(type))
             for (auto &entity : archetype->indexToEntities)
                 entities.push_back(entity.first);
-        entitiesWithComponents[type] = entities;
-        return entities;
+        entitiesWith[type] = std::move(entities);
+        return entitiesWith[type];
     }
 }

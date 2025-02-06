@@ -1,7 +1,6 @@
 #include "game.hpp"
 #include <SDL2/SDL.h>
 #include <iostream>
-#include "texture_manager.hpp"
 
 Game::Game()
 {

@@ -17,44 +17,11 @@ namespace engine
         return instance;
     }
 
-    template <typename T>
-    void ComponentsRegistry::registerComponent()
-    {
-        componentRowFactory[GetComponentID<T>()] = []()
-        { return std::make_shared<ComponentRow<T>>(); };
-    }
-
     std::shared_ptr<ComponentRowBase> ComponentsRegistry::createComponentRow(ComponentID componentID)
     {
         if (!componentRowFactory[componentID])
             throw std::runtime_error("Component not registered");
         return componentRowFactory[componentID]();
-    }
-
-    template <typename T>
-    void *ComponentRow<T>::addDefaultBlock()
-    {
-        blocks.push_back(T());
-        return &blocks.back();
-    }
-
-    template <typename T>
-    void ComponentRow<T>::removeBlock(size_t index)
-    {
-        std::swap(blocks[index], blocks.back());
-        blocks.pop_back();
-    }
-
-    template <typename T>
-    void ComponentRow<T>::copyBlock(size_t index, Component *component)
-    {
-        blocks[index] = *component;
-    }
-
-    template <typename T>
-    void *ComponentRow<T>::getBlock(size_t index)
-    {
-        return &blocks[index];
     }
 
     void Archetype::init(Type type)
@@ -65,7 +32,7 @@ namespace engine
         {
             if (type[i])
             {
-                componentTypeRowIndices[i] = sc++;
+                componentToRow[i] = sc++;
                 componentRows.push_back(ComponentsRegistry::instance().createComponentRow(i));
             }
             i++;
@@ -95,26 +62,16 @@ namespace engine
         for (auto &row : componentRows)
         {
             auto componentRow = std::static_pointer_cast<ComponentRowBase>(row);
-            componentRow->addDefaultBlock();
+            componentRow->addBlock();
         }
         return count++;
-    }
-
-    template <typename T>
-    T &Archetype::getComponent(EntityID entityId)
-    {
-        if (!entityIndices[entityId])
-            throw std::runtime_error("Entity does not exist");
-        size_t c = entityIndices[entityId], r = componentTypeRowIndices[GetComponentID<T>()];
-        auto componentRow = std::static_pointer_cast<ComponentRow<T>>(componentRows[r]);
-        return componentRow->blocks[c];
     }
 
     Component *Archetype::getComponent(EntityID entityId, ComponentID componentId)
     {
         if (!entityIndices[entityId])
             throw std::runtime_error("Entity does not exist");
-        size_t c = entityIndices[entityId], r = componentTypeRowIndices[componentId];
+        size_t c = entityIndices[entityId], r = componentToRow[componentId];
         auto componentRow = std::static_pointer_cast<ComponentRowBase>(componentRows[r]);
         return (Component *)componentRow->getBlock(c);
     }
@@ -123,7 +80,7 @@ namespace engine
     {
         if (!entityIndices[entityId])
             throw std::runtime_error("Entity does not exist");
-        size_t c = entityIndices[entityId], r = componentTypeRowIndices[componentId];
+        size_t c = entityIndices[entityId], r = componentToRow[componentId];
         auto componentRow = std::static_pointer_cast<ComponentRowBase>(componentRows[r]);
         componentRow->copyBlock(c, component);
     }
