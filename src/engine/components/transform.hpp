@@ -1,9 +1,21 @@
 #pragma once
 #include <glm/glm.hpp>
+#include "../entity.hpp"
+#include "../defs.hpp"
 
-struct Transform
+namespace engine
 {
-    glm::vec2 position;
-    glm::vec2 scale;
-    float rotation;
-};
+    struct Transform : Component
+    {
+        vec2 position;
+        vec2 scale;
+        float rotation;
+    };
+
+    struct BoxCollider : Component
+    {
+        float width;
+        float height;
+        vec2 center;
+    };
+}

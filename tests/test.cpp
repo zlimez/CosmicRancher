@@ -24,14 +24,3 @@ int GetComponentID()
     static int id = Component::GetNewID();
     return id;
 }
-
-// Usage
-int main()
-{
-    int positionID = GetComponentID<PositionComponent>();
-    int velocityID = GetComponentID<VelocityComponent>();
-    cout << positionID << '\n';
-    cout << velocityID << '\n';
-    positionID = GetComponentID<PositionComponent>();
-    cout << positionID << '\n';
-}

@@ -13,8 +13,10 @@ namespace engine
     {
     private:
         IdPool idPool; // Ids are contiguous hence possible to use vector instead of map
-        std::vector<Archetype &> entityArchetypes;
+        std::vector<Archetype *> entityArchetypes;
         std::unordered_map<Type, Archetype> archetypes;
+        std::unordered_map<Type, std::vector<Archetype *>> archetypesWithComponents;
+        std::unordered_map<Type, std::vector<EntityID>> entitiesWithComponents;
 
     public:
         World(uint32 expectedEntities = 1000, uint32 = 10);
@@ -29,6 +31,7 @@ namespace engine
         T &getComponent(EntityID entityId);
         template <typename T>
         bool hasComponent(EntityID entityId);
+        std::vector<Archetype *> getArchetypesWithComponents(Type type);
         std::vector<EntityID> getEntitiesWithComponents(Type type);
     };
 }

@@ -1,5 +1,4 @@
 #include "game.hpp"
-#include "systems/map_gen.hpp"
 #include <SDL2/SDL.h>
 #include <iostream>
 #include "texture_manager.hpp"

@@ -5,7 +5,6 @@
 #include <memory>
 #include <unordered_map>
 #include <functional>
-#include <concepts>
 
 namespace engine
 {
@@ -25,6 +24,15 @@ namespace engine
         bool active = true;
     };
 
+    struct ComponentRowBase
+    {
+        virtual ~ComponentRowBase() = default;
+        virtual void *addDefaultBlock() = 0;
+        virtual void removeBlock(size_t index) = 0;
+        virtual void copyBlock(size_t index, Component *component) = 0;
+        virtual void *getBlock(size_t index) = 0;
+    };
+
     class ComponentsRegistry
     {
     private:
@@ -36,15 +44,6 @@ namespace engine
         template <typename T>
         void registerComponent();
         std::shared_ptr<ComponentRowBase> createComponentRow(ComponentID componentID);
-    };
-
-    struct ComponentRowBase
-    {
-        virtual ~ComponentRowBase() = default;
-        virtual void *addDefaultBlock() = 0;
-        virtual void removeBlock(size_t index) = 0;
-        virtual void copyBlock(size_t index, Component *component) = 0;
-        virtual void *getBlock(size_t index) = 0;
     };
 
     // Stores the data of a component type
@@ -65,7 +64,8 @@ namespace engine
         size_t count;
         int componentTypeRowIndices[MAX_COMPONENT_TYPES];
         std::vector<std::shared_ptr<void>> componentRows;
-        std::unordered_map<EntityID, size_t> entityIndices, indexToEntities;
+        std::unordered_map<EntityID, size_t> entityIndices;
+        std::unordered_map<size_t, EntityID> indexToEntities;
 
         size_t addEntity();
         size_t removeEntity(EntityID entityId);

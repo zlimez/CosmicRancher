@@ -21,7 +21,7 @@ namespace engine
     void ComponentsRegistry::registerComponent()
     {
         componentRowFactory[GetComponentID<T>()] = []()
-        { return std::make_shared<ComponentRow<T>>(); }
+        { return std::make_shared<ComponentRow<T>>(); };
     }
 
     std::shared_ptr<ComponentRowBase> ComponentsRegistry::createComponentRow(ComponentID componentID)
