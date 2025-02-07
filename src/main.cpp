@@ -11,15 +11,12 @@ int main()
 
     while (game.isRunning())
     {
-        game.handleEvents();
-
         Uint32 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
         Time::deltaTime = deltaTime;
 
         game.update();
-        game.render();
     }
     game.cleanup();
 

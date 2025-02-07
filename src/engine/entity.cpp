@@ -2,7 +2,7 @@
 
 namespace engine
 {
-    ComponentID ComponentsRegistry::GetNewID()
+    ComponentID GetNewID()
     {
         static ComponentID lastID = 0;
         if (lastID < MAX_COMPONENT_TYPES)
@@ -27,6 +27,7 @@ namespace engine
     void Archetype::init(Type type)
     {
         this->type = type;
+        // std::cout << "Initializing archetype with type: " << type << '\n';
         int sc = 0, sbc = type.count(), i = 0;
         while (sc < sbc)
         {
@@ -55,33 +56,42 @@ namespace engine
         return --count;
     }
 
-    size_t Archetype::addEntity()
+    size_t Archetype::addEntity(EntityID id)
     {
-        if (!initialized)
-            init(type);
         for (auto &row : componentRows)
         {
             auto componentRow = std::static_pointer_cast<ComponentRowBase>(row);
             componentRow->addBlock();
         }
+        entityIndices[id] = count;
+        indexToEntities[count] = id;
         return count++;
     }
 
     Component *Archetype::getComponent(EntityID entityId, ComponentID componentId)
     {
-        if (!entityIndices[entityId])
+        if (!entityIndices.count(entityId))
             throw std::runtime_error("Entity does not exist");
         size_t c = entityIndices[entityId], r = componentToRow[componentId];
         auto componentRow = std::static_pointer_cast<ComponentRowBase>(componentRows[r]);
         return (Component *)componentRow->getBlock(c);
     }
 
-    void Archetype::copyComponent(EntityID entityId, ComponentID componentId, Component *component)
+    void Archetype::moveComponent(EntityID entityId, ComponentID componentId, Component *component)
     {
-        if (!entityIndices[entityId])
+        if (!entityIndices.count(entityId))
             throw std::runtime_error("Entity does not exist");
         size_t c = entityIndices[entityId], r = componentToRow[componentId];
         auto componentRow = std::static_pointer_cast<ComponentRowBase>(componentRows[r]);
         componentRow->copyBlock(c, component);
     }
+
+    // void Archetype::copyComponent(EntityID entityId, ComponentID componentId, Component *component)
+    // {
+    //     if (!entityIndices.count(entityId))
+    //         throw std::runtime_error("Entity does not exist");
+    //     size_t c = entityIndices[entityId], r = componentToRow[componentId];
+    //     auto componentRow = std::static_pointer_cast<ComponentRowBase>(componentRows[r]);
+    //     componentRow->copyBlock(c, component);
+    // }
 };

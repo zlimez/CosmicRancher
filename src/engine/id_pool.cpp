@@ -1,4 +1,3 @@
-#include <queue>
 #include "id_pool.hpp"
 
 uint32_t IdPool::acquireId()

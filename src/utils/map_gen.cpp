@@ -2,15 +2,19 @@
 
 namespace map
 {
-    std::vector<std::vector<int>> Voronoi::generate(int n, int m, std::vector<std::tuple<int, int, int>> &ogSeeds, std::vector<std::pair<int, int>> &extSeedCnt, int (*distFunc)(int, int, int, int))
+    std::vector<std::vector<int>> voronoi(std::pair<int, int> dim, std::vector<std::pair<int, int>> &ranSeeds, int (*distFunc)(int, int, int, int), std::vector<std::tuple<int, int, int>> *fixedSeeds)
     {
+        auto [n, m] = dim;
         std::vector<std::vector<int>> map(n, std::vector<int>(m, -1));
         std::vector<std::tuple<int, int, int>> seeds;
 
-        for (auto [y, x, t] : ogSeeds)
+        if (fixedSeeds)
         {
-            map[y][x] = t;
-            seeds.push_back({y, x, t});
+            for (auto [y, x, t] : *fixedSeeds)
+            {
+                map[y][x] = t;
+                seeds.push_back({y, x, t});
+            }
         }
 
         std::vector<std::pair<int, int>> allCells;
@@ -26,9 +30,8 @@ namespace map
         std::mt19937 g(rd());
         std::shuffle(allCells.begin(), allCells.end(), g);
 
-        // Works efficiently if n * m >> total seedCnt
         int chosenInd = 0;
-        for (auto [t, cnt] : extSeedCnt)
+        for (auto [t, cnt] : ranSeeds)
         {
             for (int i = 0; i < cnt; i++)
             {

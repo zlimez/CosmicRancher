@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 #include "entity.hpp"
 #include "id_pool.hpp"
 
@@ -9,6 +10,7 @@ namespace engine
     class World
     {
     private:
+        uint32 entityCnt, componentCnt;
         IdPool idPool; // Ids are contiguous hence possible to use vector instead of map
         std::vector<Archetype *> entityArchetypes;
         std::unordered_map<Type, Archetype> archetypes;
@@ -16,7 +18,7 @@ namespace engine
         std::unordered_map<Type, std::vector<EntityID>> entitiesWith;
 
     public:
-        World(uint32 expectedEntities = 1000, uint32 = 10);
+        World(uint32 entityCnt = 1000, uint32 componentCnt = 10);
 
         EntityID createEntity(std::vector<ComponentID> &componentTypes);
         void destroyEntity(EntityID entityId);
@@ -32,10 +34,10 @@ namespace engine
             Type newType = entityArchetypes[entityId]->type, oldType = newType;
             newType.set(componentId);
             auto &dstArchetype = archetypes[newType], &srcArchetype = archetypes[oldType];
-            dstArchetype.addEntity();
+            dstArchetype.addEntity(entityId);
             for (ComponentID i = 0; i < newType.size(); i++)
                 if (oldType[i])
-                    dstArchetype.copyComponent(entityId, i, srcArchetype.getComponent(entityId, i));
+                    dstArchetype.moveComponent(entityId, i, srcArchetype.getComponent(entityId, i));
 
             archetypes[oldType].removeEntity(entityId);
             entityArchetypes[entityId] = &archetypes[newType];
@@ -52,23 +54,23 @@ namespace engine
             auto &dstArchetype = archetypes[newType], &srcArchetype = archetypes[oldType];
             for (ComponentID i = 0; i < newType.size(); i++)
                 if (newType[i])
-                    dstArchetype.copyComponent(entityId, i, srcArchetype.getComponent(entityId, i));
+                    dstArchetype.moveComponent(entityId, i, srcArchetype.getComponent(entityId, i));
 
             archetypes[oldType].removeEntity(entityId);
             entityArchetypes[entityId] = &archetypes[newType];
         }
 
         template <typename T>
-        bool hasComponent(EntityID entityId)
-        {
-            return entityArchetypes[entityId]->type[getComponentID<T>()];
-        }
+        bool hasComponent(EntityID entityId) { return entityArchetypes[entityId]->type[getComponentID<T>()]; }
 
         template <typename T>
         T &getComponent(EntityID entityId)
         {
-            if (!hasComponent(entityId, getComponentID<T>()))
-                return nullptr;
+            if (!entityArchetypes[entityId]->type[getComponentID<T>()])
+            {
+                std::cerr << "Entity " << entityId << " does not have component " << typeid(T).name() << " componentId " << getComponentID<T>() << ' ' << entityArchetypes[entityId]->type << '\n';
+                throw std::runtime_error("Entity does not have component");
+            }
             return entityArchetypes[entityId]->getComponent<T>(entityId);
         }
     };

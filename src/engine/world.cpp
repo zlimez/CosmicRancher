@@ -3,13 +3,15 @@
 // ComponentID is not identical across runs, needs to be handled if serialization is required
 namespace engine
 {
-    World::World(uint32 expectedEntities, uint32 expectedComponentCnt)
+    World::World(uint32 entityCnt, uint32 componentCnt)
     {
         idPool = IdPool();
-        entityArchetypes.resize(expectedEntities);
-        if (expectedComponentCnt > MAX_COMPONENT_TYPES)
+        this->entityCnt = entityCnt;
+        this->componentCnt = componentCnt;
+        entityArchetypes.resize(entityCnt);
+        if (componentCnt > MAX_COMPONENT_TYPES)
             throw std::runtime_error("Max component types reached");
-        archetypes.reserve(1LL << expectedComponentCnt);
+        archetypes.reserve(1LL << componentCnt);
     }
 
     EntityID World::createEntity(std::vector<ComponentID> &componentTypes)
@@ -18,8 +20,11 @@ namespace engine
         Type type;
         for (auto component : componentTypes)
             type.set(component);
+
+        if (!archetypes.count(type))
+            archetypes[type].init(type);
         auto &archetype = archetypes[type];
-        archetype.addEntity();
+        archetype.addEntity(id);
         entityArchetypes[id] = &archetype;
         return id;
     }
@@ -28,6 +33,7 @@ namespace engine
     {
         idPool.releaseId(entityId);
         entityArchetypes[entityId]->removeEntity(entityId);
+        entityArchetypes[entityId] = nullptr;
     }
 
     std::vector<Archetype *> &World::getArchetypesWith(Type type)
@@ -49,9 +55,15 @@ namespace engine
         };
 
         Type mask = ~type, subset = mask;
+        // Component count can be less than MAX_COMPONENT_TYPES, reduces number of subsets
+        for (int i = componentCnt; i < MAX_COMPONENT_TYPES; i++)
+            mask[i] = 0;
+
         while (subset.any())
         {
-            superTypes.push_back(&archetypes[subset | type]);
+            Type fType = subset | type;
+            if (archetypes.count(fType))
+                superTypes.push_back(&archetypes[fType]);
             subset = (mask & minusOne(subset));
         }
         archetypesWith[type] = std::move(superTypes);

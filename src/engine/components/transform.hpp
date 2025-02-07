@@ -16,10 +16,10 @@ namespace engine
         {
             if (this != &other)
             {
-                this->isStatic = other.isStatic;
-                this->position = other.position;
-                this->rotation = other.rotation;
-                this->scale = other.scale;
+                isStatic = other.isStatic;
+                position = other.position;
+                rotation = other.rotation;
+                scale = other.scale;
             }
             return *this;
         }
