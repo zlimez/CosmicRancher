@@ -9,17 +9,15 @@ class Game
 private:
     bool running;
     SDL_Window *window;
+    SDL_GLContext glContext;
 
 public:
     Game();
     ~Game() {};
 
-    static SDL_Renderer *renderer;
-
     void init(const char *title, int width, int height, bool fullscreen);
     void handleEvents();
     void update();
-    void render();
     void cleanup();
 
     bool isRunning()

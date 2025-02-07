@@ -9,6 +9,7 @@ namespace engine
     class World
     {
     private:
+        uint32 entityCnt, componentCnt;
         IdPool idPool; // Ids are contiguous hence possible to use vector instead of map
         std::vector<Archetype *> entityArchetypes;
         std::unordered_map<Type, Archetype> archetypes;
@@ -16,7 +17,7 @@ namespace engine
         std::unordered_map<Type, std::vector<EntityID>> entitiesWith;
 
     public:
-        World(uint32 expectedEntities = 1000, uint32 = 10);
+        World(uint32 entityCnt = 1000, uint32 componentCnt = 10);
 
         EntityID createEntity(std::vector<ComponentID> &componentTypes);
         void destroyEntity(EntityID entityId);

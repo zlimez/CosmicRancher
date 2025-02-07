@@ -1,6 +1,7 @@
 #pragma once
 #include "../defs.hpp"
 #include "../entity.hpp"
+#include "../../graphics/shader.hpp"
 
 namespace engine
 {
@@ -13,7 +14,15 @@ namespace engine
     struct Texture
     {
         uint32 textureID;
-        std::string texturePath;
+        char *directory;
+        char *file;
+    };
+
+    struct ShaderParts
+    {
+        static const char delim = '|';
+        char *vtxPath;
+        char *fragPath;
     };
 
     // NOTE: For now one sprite per entity, default stretch the texture to the sprite size
@@ -21,6 +30,8 @@ namespace engine
     {
         std::vector<Vertex> vertices;
         Texture texture;
+        ShaderParts shaders;
+        graphics::Shader shader;
         bool flipX, flipY;
         uint32 order;
         uint32 vao, vbo;
@@ -31,6 +42,8 @@ namespace engine
             {
                 vertices = std::move(other.vertices);
                 texture = other.texture;
+                shaders = other.shaders;
+                shader = other.shader;
                 flipX = other.flipX;
                 flipY = other.flipY;
                 order = other.order;

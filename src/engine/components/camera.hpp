@@ -2,6 +2,7 @@
 #include "../entity.hpp"
 #include "../defs.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glad/glad.h>
 
 namespace engine
 {
@@ -20,8 +21,8 @@ namespace engine
         //     view = glm::translate(view, glm::vec3(-position.x, -position.y, 0.0f));
         //     return view;
         // }
-
-        vec2 position;
+        // NOTE: For now one camera in world, width and height should match viewport size
         float width, height;
+        GLuint fbo;
     };
 }

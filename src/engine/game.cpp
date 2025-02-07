@@ -9,23 +9,28 @@ Game::Game()
 
 void Game::init(const char *title, int width, int height, bool fullscreen)
 {
-    int flags = 0;
+    int flags = SDL_WINDOW_OPENGL;
     if (fullscreen)
         flags = SDL_WINDOW_FULLSCREEN;
 
     if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
     {
-        window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+        window = SDL_CreateWindow("OpenGL + SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
         if (window)
         {
-            renderer = SDL_CreateRenderer(window, -1, 0);
-            if (renderer)
+            glContext = SDL_GL_CreateContext(window);
+            if (glContext)
                 running = true;
+        }
+        else
+        {
+            std::cerr << "SDL Window Creation Error: " << SDL_GetError() << '\n';
+            running = false;
         }
     }
     else
     {
-        std::cout << "SDL Initialization Error: " << SDL_GetError() << std::endl;
+        std::cerr << "SDL Initialization Error: " << SDL_GetError() << '\n';
         running = false;
     }
 }
@@ -34,17 +39,10 @@ void Game::update()
 {
 }
 
-void Game::render()
-{
-    SDL_RenderClear(renderer);
-
-    SDL_RenderPresent(renderer);
-}
-
 void Game::cleanup()
 {
+    SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
     SDL_Quit();
 }
 
@@ -62,5 +60,3 @@ void Game::handleEvents()
         break;
     }
 }
-
-SDL_Renderer *Game::renderer = nullptr;

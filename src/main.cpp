@@ -19,7 +19,6 @@ int main()
         Time::deltaTime = deltaTime;
 
         game.update();
-        game.render();
     }
     game.cleanup();
 
