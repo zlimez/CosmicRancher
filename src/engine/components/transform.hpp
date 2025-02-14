@@ -7,10 +7,10 @@ namespace engine
 {
     struct Transform : Component
     {
-        bool isStatic;
-        vec2 position;
-        vec2 scale;
-        float rotation;
+        bool isStatic = false;
+        vec2 position = {0.0f, 0.0f};
+        vec2 scale = {1.0f, 1.0f};
+        float rotation = 0.0f;
 
         Transform &operator=(const Transform &other)
         {
@@ -27,9 +27,9 @@ namespace engine
 
     struct BoxCollider : Component
     {
-        float width;
-        float height;
-        vec2 center;
+        float width = 1.0f;
+        float height = 1.0f;
+        vec2 center = {0.0f, 0.0f};
 
         BoxCollider &operator=(const BoxCollider &other)
         {

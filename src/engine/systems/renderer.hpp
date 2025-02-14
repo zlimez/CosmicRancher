@@ -16,6 +16,7 @@ namespace engine
     {
     private:
         std::unordered_map<std::string, graphics::Shader> shaders;
+        std::unordered_map<std::string, GLuint> textures;
         std::vector<std::tuple<uint32, Sprite *, Transform *>> sprites;
         SDL_Window *window;
         void setupSprite(Sprite &sprite, Transform &transform);

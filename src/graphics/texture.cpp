@@ -7,10 +7,8 @@ namespace graphics
 {
     unsigned int texFromFile(std::string &filePath, GLint SWrap, GLint TWrap, bool gamma)
     {
-        std::cout << "Loading texture: " << filePath << std::endl;
         unsigned int textureID;
         glGenTextures(1, &textureID);
-        std::cout << "Texture ID: " << textureID << std::endl;
 
         int width, height, nrComponents;
         stbi_set_flip_vertically_on_load(false);

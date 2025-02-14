@@ -8,5 +8,6 @@ uniform sampler2D texture_diffuse;
 // uniform sampler2D texture_specular;
 
 void main() {
+    // FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color
     FragColor = texture(texture_diffuse, TexCoords);
 }

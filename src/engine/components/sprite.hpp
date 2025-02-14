@@ -7,13 +7,13 @@ namespace engine
 {
     struct Vertex
     {
-        vec3 position;
-        vec2 texCoords;
+        vec3 position = {0.0f, 0.0f, 0.0f};
+        vec2 texCoords = {0.0f, 0.0f};
     };
 
     struct Texture
     {
-        uint32 textureID;
+        uint32 textureID = 0;
         std::string filePath;
     };
 
@@ -28,12 +28,13 @@ namespace engine
     struct Sprite : Component
     {
         std::vector<Vertex> vertices;
+        std::vector<uint32> indices;
         Texture texture;
         ShaderParts shaderParts;
         graphics::Shader shader;
-        bool flipX, flipY;
-        uint32 order;
-        uint32 vao, vbo;
+        bool flipX = false, flipY = false;
+        uint32 order = 0;
+        uint32 vao = 0, vbo = 0, ebo = 0;
 
         Sprite &operator=(const Sprite &other) noexcept
         {
@@ -48,6 +49,7 @@ namespace engine
                 order = other.order;
                 vao = other.vao;
                 vbo = other.vbo;
+                ebo = other.ebo;
             }
 
             return *this;

@@ -9,8 +9,8 @@ namespace engine
     struct Camera : Component
     {
         // NOTE: For now one camera in world, width and height should match viewport size
-        float width, height;
-        GLuint fbo;
+        float width = 100.0f, height = 100.0f;
+        GLuint fbo = 0;
 
         Camera &operator=(const Camera &other)
         {
