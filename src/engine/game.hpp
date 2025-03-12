@@ -20,9 +20,6 @@ private:
     std::unique_ptr<engine::World> world;
     std::unique_ptr<engine::Renderer> renderer;
 
-    // graphics::Shader shader;
-    // unsigned int VAO, VBO, EBO, texID;
-
 public:
     static std::string basePath;
 

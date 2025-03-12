@@ -54,25 +54,5 @@ namespace engine
 
             return *this;
         }
-
-        // Sprite &operator=(Sprite &&other) noexcept
-        // {
-        //     if (this != &other)
-        //     {
-        //         vertices = std::move(other.vertices);
-        //         texture = std::move(other.texture);
-        //         shaderParts = std::move(other.shaderParts);
-        //         shader = std::move(other.shader);
-        //         flipX = other.flipX;
-        //         flipY = other.flipY;
-        //         order = other.order;
-        //         vao = other.vao;
-        //         vbo = other.vbo;
-
-        //         other.vao = 0;
-        //         other.vbo = 0;
-        //     }
-        //     return *this;
-        // }
     };
 };

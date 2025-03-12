@@ -17,6 +17,7 @@ namespace engine
     private:
         std::unordered_map<std::string, graphics::Shader> shaders;
         std::unordered_map<std::string, GLuint> textures;
+        // TODO: Assumes no removal of entites or component from entities, i.e. once created with sprite component it remains
         std::vector<std::tuple<uint32, Sprite *, Transform *>> sprites;
         SDL_Window *window;
         void setupSprite(Sprite &sprite, Transform &transform);

@@ -22,17 +22,5 @@ namespace engine
             }
             return *this;
         }
-
-        // Camera &operator=(Camera &&other)
-        // {
-        //     if (this != &other)
-        //     {
-        //         width = other.width;
-        //         height = other.height;
-        //         fbo = other.fbo;
-        //         other.fbo = 0;
-        //     }
-        //     return *this;
-        // }
     };
 }
