@@ -26,11 +26,11 @@ namespace engine
         std::vector<EntityID> &getEntitiesWith(Type type);
 
         template <typename T>
-        void addComponent(EntityID entityId)
+        T &addComponent(EntityID entityId)
         {
             ComponentID componentId = getComponentID<T>();
             if (entityArchetypes[entityId]->type[componentId])
-                return;
+                return entityArchetypes[entityId]->getComponent<T>(entityId);
             Type newType = entityArchetypes[entityId]->type, oldType = newType;
             newType.set(componentId);
             auto &dstArchetype = archetypes[newType], &srcArchetype = archetypes[oldType];
@@ -40,7 +40,8 @@ namespace engine
                     dstArchetype.moveComponent(entityId, i, srcArchetype.getComponent(entityId, i));
 
             archetypes[oldType].removeEntity(entityId);
-            entityArchetypes[entityId] = &archetypes[newType];
+            entityArchetypes[entityId] = &dstArchetype;
+            return dstArchetype.getComponent<T>(entityId);
         }
 
         template <typename T>

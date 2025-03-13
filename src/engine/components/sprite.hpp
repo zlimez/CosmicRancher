@@ -54,5 +54,15 @@ namespace engine
 
             return *this;
         }
+
+        ~Sprite()
+        {
+            if (vao)
+                glDeleteVertexArrays(1, &vao);
+            if (vbo)
+                glDeleteBuffers(1, &vbo);
+            if (ebo)
+                glDeleteBuffers(1, &ebo);
+        }
     };
 };
