@@ -3,7 +3,7 @@
 // NOTE: A lot of optimizations possible
 namespace engine
 {
-    void Renderer::setupSprite(Sprite &sprite, Transform &transform)
+    void RenderSys::setupSprite(Sprite &sprite, Transform &transform)
     {
         if (sprite.vao)
             return;
@@ -35,7 +35,7 @@ namespace engine
         glBindVertexArray(0);
     }
 
-    void Renderer::getSprites(World &world)
+    void RenderSys::getSprites(World &world)
     {
         Type spriteType;
         spriteType.set(getComponentID<Sprite>());
@@ -60,7 +60,7 @@ namespace engine
                   { return std::get<0>(a) < std::get<0>(b); });
     }
 
-    void Renderer::init(World &world)
+    void RenderSys::init(World &world)
     {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
@@ -71,7 +71,7 @@ namespace engine
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    void Renderer::update(World &world)
+    void RenderSys::update(World &world)
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         getSprites(world);
@@ -138,7 +138,7 @@ namespace engine
         SDL_GL_SwapWindow(window);
     }
 
-    void Renderer::cleanup()
+    void RenderSys::cleanup()
     {
         for (auto &shader : shaders)
             glDeleteProgram(shader.second.ID);

@@ -14,18 +14,6 @@ namespace engine
         std::vector<vec2> vertices;
 
         BoxCollider() : vertices(4) {}
-
-        BoxCollider &operator=(const BoxCollider &other)
-        {
-            if (this != &other)
-            {
-
-                width = other.width;
-                height = other.height;
-                center = other.center;
-            }
-            return *this;
-        }
     };
 
     struct Collision

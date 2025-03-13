@@ -41,7 +41,8 @@ namespace engine
         if (archetypesWith.find(type) != archetypesWith.end())
             return archetypesWith[type];
         std::vector<Archetype *> superTypes;
-        superTypes.push_back(&archetypes[type]);
+        if (archetypes.count(type))
+            superTypes.push_back(&archetypes[type]);
         auto minusOne = [](Type type)
         {
             size_t i = 0;
@@ -54,7 +55,7 @@ namespace engine
             return type;
         };
 
-        Type mask = ~type, subset = mask;
+        Type mask = ~type, subset = ~type;
         // Component count can be less than MAX_COMPONENT_TYPES, reduces number of subsets
         for (int i = componentCnt; i < MAX_COMPONENT_TYPES; i++)
             mask[i] = 0;

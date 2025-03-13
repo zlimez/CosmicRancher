@@ -42,26 +42,45 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     engine::ComponentsRegistry::instance().registerComponent<engine::Camera>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Transform>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Sprite>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::Controller>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::Movement>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::BoxCollider>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::Collisions>();
+    // std::cout << "Components registered\n";
 
     world = std::make_unique<engine::World>(20000, 10);
     map::Terrain grass = {0, 10}, water = {1, 10};
     std::vector<map::Terrain> terrains = {grass, water};
     std::vector<std::string> terrainSprites = {basePath + "../assets/art/tiles/grass/tile_31.png", basePath + "../assets/art/tiles/water/tile_0.png"};
     map::mapFor({100, 100}, {0, 0}, terrains, terrainSprites, *world);
+    // std::cout << "Map made\n";
 
-    std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>()};
+    std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>(), engine::getComponentID<engine::Controller>(), engine::getComponentID<engine::Movement>()};
     auto camId = world->createEntity(camType);
     auto &cam = world->getComponent<engine::Camera>(camId);
     cam.height = (float)height / 20;
     cam.width = (float)width / 20;
+    // std::cout << "Cam set\n";
 
-    renderer = std::make_unique<engine::Renderer>(window);
+    renderer = std::make_unique<engine::RenderSys>(window);
+    movementSys = std::make_unique<engine::MovementSys>();
+    controllerSys = std::make_unique<engine::ControllerSys>();
+    collisionDetector = std::make_unique<engine::CollisionDetector>();
     renderer->init(*world);
+    movementSys->init(*world);
+    controllerSys->init(*world);
+    collisionDetector->init(*world);
+    // std::cout << "Systems initialized\n";
 }
 
 void Game::update()
 {
-    handleEvents();
+    engine::InputSys::getInstance().handleEvents();
+    if (engine::InputSys::getInstance().isQuit())
+        running = false;
+
+    controllerSys->update(*world);
+    movementSys->update(*world);
     renderer->update(*world);
 }
 
@@ -70,21 +89,6 @@ void Game::cleanup()
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     SDL_Quit();
-}
-
-void Game::handleEvents()
-{
-    SDL_Event event;
-    SDL_PollEvent(&event);
-    switch (event.type)
-    {
-    case SDL_QUIT:
-        running = false;
-        break;
-
-    default:
-        break;
-    }
 }
 
 std::string Game::basePath = SDL_GetBasePath();

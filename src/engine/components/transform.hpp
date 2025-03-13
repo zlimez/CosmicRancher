@@ -11,17 +11,10 @@ namespace engine
         vec2 position = {0.0f, 0.0f};
         vec2 scale = {1.0f, 1.0f};
         float rotation = 0.0f;
+    };
 
-        Transform &operator=(const Transform &other)
-        {
-            if (this != &other)
-            {
-                isStatic = other.isStatic;
-                position = other.position;
-                rotation = other.rotation;
-                scale = other.scale;
-            }
-            return *this;
-        }
+    struct Movement : Component
+    {
+        vec2 velocity = {0.0f, 0.0f};
     };
 }

@@ -27,7 +27,7 @@ namespace engine
     void Archetype::init(Type type)
     {
         this->type = type;
-        // std::cout << "Initializing archetype with type: " << type << '\n';
+        std::cout << "Initializing archetype with type: " << type << '\n';
         int sc = 0, sbc = type.count(), i = 0;
         while (sc < sbc)
         {

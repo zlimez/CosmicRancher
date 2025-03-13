@@ -12,7 +12,7 @@
 
 namespace engine
 {
-    class Renderer : public System
+    class RenderSys : public System
     {
     private:
         std::unordered_map<std::string, graphics::Shader> shaders;
@@ -23,8 +23,8 @@ namespace engine
         void getSprites(World &world);
 
     public:
-        Renderer(SDL_Window *window) : window(window) {}
-        ~Renderer() {}
+        RenderSys(SDL_Window *window) : window(window) {}
+        ~RenderSys() {}
         void init(World &world) override;
         void update(World &world) override;
         void cleanup() override;
