@@ -1,9 +1,9 @@
 #pragma once
 #include "system.hpp"
+#include "input.hpp"
 #include "../time.hpp"
 #include "../components/transform.hpp"
 #include "../components/camera.hpp"
-#include "input.hpp"
 
 namespace engine
 {

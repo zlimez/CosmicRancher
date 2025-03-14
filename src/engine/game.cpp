@@ -46,14 +46,19 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     engine::ComponentsRegistry::instance().registerComponent<engine::Movement>();
     engine::ComponentsRegistry::instance().registerComponent<engine::BoxCollider>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Collisions>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::Map>();
     // std::cout << "Components registered\n";
 
     world = std::make_unique<engine::World>(20000, 10);
-    map::Terrain grass = {0, 10}, water = {1, 10};
-    std::vector<map::Terrain> terrains = {grass, water};
-    std::vector<std::string> terrainSprites = {basePath + "../assets/art/tiles/grass/tile_31.png", basePath + "../assets/art/tiles/water/tile_0.png"};
-    map::mapFor({100, 100}, {0, 0}, terrains, terrainSprites, *world);
-    // std::cout << "Map made\n";
+
+    std::vector<engine::ComponentID> mapType = {engine::getComponentID<engine::Map>()};
+    auto mapId = world->createEntity(mapType);
+    auto &map = world->getComponent<engine::Map>(mapId);
+    map.dim = {100, 100};
+    // std::cout << "engine::basePath: " << engine::basePath << '\n';
+    engine::Terrain grass = {10, engine::basePath + "../assets/art/tiles/grass/tile_31.png"}, water = {10, engine::basePath + "../assets/art/tiles/water/tile_0.png"};
+    map.terrains.push_back(grass);
+    map.terrains.push_back(water);
 
     std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>(), engine::getComponentID<engine::Controller>(), engine::getComponentID<engine::Movement>()};
     auto camId = world->createEntity(camType);
@@ -66,11 +71,15 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     movementSys = std::make_unique<engine::MovementSys>();
     controllerSys = std::make_unique<engine::ControllerSys>();
     collisionDetector = std::make_unique<engine::CollisionDetector>();
+    mapSys = std::make_unique<engine::MapSys>();
+
+    mapSys->init(*world);
+    // std::cout << "MapSys initialized\n";
     renderer->init(*world);
+    // std::cout << "Renderer initialized\n";
     movementSys->init(*world);
     controllerSys->init(*world);
     collisionDetector->init(*world);
-    // std::cout << "Systems initialized\n";
 }
 
 void Game::update()
@@ -90,5 +99,3 @@ void Game::cleanup()
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
-
-std::string Game::basePath = SDL_GetBasePath();
