@@ -35,4 +35,9 @@ namespace engine
             return *this;
         }
     };
+
+    struct MapCell : Component
+    {
+        std::pair<int, int> pos;
+    };
 }

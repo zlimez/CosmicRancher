@@ -4,7 +4,9 @@
 #include "../components/map.hpp"
 #include "../components/sprite.hpp"
 #include "../components/transform.hpp"
+#include "../components/collider.hpp"
 #include "../entity.hpp"
+#include <array>
 
 namespace engine
 {
@@ -12,7 +14,9 @@ namespace engine
     class MapSys : public System
     {
     private:
+        int mw, mh;
         int rpt, lpt = 0, bpt = 0, tpt;
+        std::array<EntityID, 4> retileTriggers;
 
     public:
         void init(World &world) override;

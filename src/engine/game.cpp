@@ -47,6 +47,7 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     engine::ComponentsRegistry::instance().registerComponent<engine::BoxCollider>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Collisions>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Map>();
+    engine::ComponentsRegistry::instance().registerComponent<engine::MapCell>();
     // std::cout << "Components registered\n";
 
     world = std::make_unique<engine::World>(20000, 10);
@@ -54,17 +55,20 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     std::vector<engine::ComponentID> mapType = {engine::getComponentID<engine::Map>()};
     auto mapId = world->createEntity(mapType);
     auto &map = world->getComponent<engine::Map>(mapId);
-    map.dim = {100, 100};
+    map.dim = {50, 50};
     // std::cout << "engine::basePath: " << engine::basePath << '\n';
     engine::Terrain grass = {10, engine::basePath + "../assets/art/tiles/grass/tile_31.png"}, water = {10, engine::basePath + "../assets/art/tiles/water/tile_0.png"};
     map.terrains.push_back(grass);
     map.terrains.push_back(water);
 
-    std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>(), engine::getComponentID<engine::Controller>(), engine::getComponentID<engine::Movement>()};
+    std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>(), engine::getComponentID<engine::Controller>(), engine::getComponentID<engine::Movement>(), engine::getComponentID<engine::BoxCollider>()};
     auto camId = world->createEntity(camType);
     auto &cam = world->getComponent<engine::Camera>(camId);
+    auto &camCollider = world->getComponent<engine::BoxCollider>(camId);
     cam.height = (float)height / 20;
     cam.width = (float)width / 20;
+    camCollider.height = 10.0f;
+    camCollider.width = 10.0f;
     // std::cout << "Cam set\n";
 
     renderer = std::make_unique<engine::RenderSys>(window);
@@ -74,9 +78,7 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     mapSys = std::make_unique<engine::MapSys>();
 
     mapSys->init(*world);
-    // std::cout << "MapSys initialized\n";
     renderer->init(*world);
-    // std::cout << "Renderer initialized\n";
     movementSys->init(*world);
     controllerSys->init(*world);
     collisionDetector->init(*world);
