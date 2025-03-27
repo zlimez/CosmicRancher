@@ -10,19 +10,19 @@ namespace engine
     struct Camera : Component
     {
         // NOTE: For now one camera in world, width and height should match viewport size
-        float width = 100.0f, height = 100.0f;
-        GLuint fbo = 0;
+        float width_ = 100.0f, height_ = 100.0f;
+        GLuint fbo_ = 0;
     };
 
     struct Controller : Component
     {
-        SDL_KeyCode upKey = SDLK_w;
-        SDL_KeyCode downKey = SDLK_s;
-        SDL_KeyCode leftKey = SDLK_a;
-        SDL_KeyCode rightKey = SDLK_d;
+        SDL_KeyCode upKey_ = SDLK_w;
+        SDL_KeyCode downKey_ = SDLK_s;
+        SDL_KeyCode leftKey_ = SDLK_a;
+        SDL_KeyCode rightKey_ = SDLK_d;
 
-        bool hasAcc = false;
-        float maxSpeed = 10.0f;
-        float acceleration = 10.0f;
+        bool hasAcc_ = false;
+        float maxSpeed_ = 10.0f;
+        float acceleration_ = 10.0f;
     };
 }

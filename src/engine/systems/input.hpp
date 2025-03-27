@@ -17,9 +17,9 @@ namespace engine
     class InputSys
     {
     private:
-        bool quit = false;
-        std::unordered_map<SDL_Keycode, KeyState> keyStates;
-        static InputSys *instance;
+        bool quit_ = false;
+        std::unordered_map<SDL_Keycode, KeyState> keyStates_;
+        static InputSys *instance_;
         InputSys() {}
         ~InputSys() {}
         InputSys(const InputSys &) = delete;
@@ -33,7 +33,7 @@ namespace engine
         }
 
         void handleEvents();
-        inline bool isQuit() { return quit; }
-        inline KeyState getKeyState(SDL_Keycode key) { return keyStates[key]; }
+        inline bool isQuit() { return quit_; }
+        inline KeyState getKeyState(SDL_Keycode key) { return keyStates_[key]; }
     };
 }

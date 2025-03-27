@@ -7,17 +7,17 @@ namespace engine
 {
     struct Terrain
     {
-        int count;
-        std::string spriteFile;
+        int count_;
+        std::string spriteFile_;
     };
 
     struct Map : Component
     {
         // NOTE: In cell count half of actual for each side
-        std::pair<int, int> dim;
-        std::vector<Terrain> terrains;
+        std::pair<int, int> dim_;
+        std::vector<Terrain> terrains_;
         // NOTE: In local space, convert to just use width and size with vertices produced by mapsys
-        std::vector<Vertex> cellVertices = {
+        std::vector<Vertex> cellVertices_ = {
             {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
             {{0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}},
             {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f}},
@@ -27,9 +27,9 @@ namespace engine
         {
             if (this != &other)
             {
-                dim = other.dim;
-                terrains = std::move(other.terrains);
-                cellVertices = std::move(other.cellVertices);
+                dim_ = other.dim_;
+                terrains_ = std::move(other.terrains_);
+                cellVertices_ = std::move(other.cellVertices_);
             }
 
             return *this;
@@ -38,6 +38,6 @@ namespace engine
 
     struct MapCell : Component
     {
-        std::pair<int, int> pos;
+        std::pair<int, int> pos_;
     };
 }

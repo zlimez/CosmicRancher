@@ -4,8 +4,8 @@
 class IdPool
 {
 private:
-    std::queue<uint32_t> availableIds;
-    uint32_t nextId = 0;
+    std::queue<uint32_t> availableIds_;
+    uint32_t nextId_ = 0;
 
 public:
     uint32_t acquireId();

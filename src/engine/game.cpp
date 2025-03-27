@@ -17,15 +17,15 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    window = SDL_CreateWindow("OpenGL + SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
-    if (!window)
+    window_ = SDL_CreateWindow("OpenGL + SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
+    if (!window_)
     {
         std::cerr << "SDL Window Creation Error: " << SDL_GetError() << '\n';
         exit(1);
     }
 
-    glContext = SDL_GL_CreateContext(window);
-    if (!glContext)
+    glContext_ = SDL_GL_CreateContext(window_);
+    if (!glContext_)
     {
         std::cerr << "SDL GL Context Creation Error: " << SDL_GetError() << '\n';
         exit(1);
@@ -37,7 +37,7 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
         exit(1);
     }
 
-    running = true;
+    running_ = true;
     // TODO: Place in scene system
     engine::ComponentsRegistry::instance().registerComponent<engine::Camera>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Transform>();
@@ -48,56 +48,55 @@ void Game::init(const char *title, int width, int height, bool fullscreen)
     engine::ComponentsRegistry::instance().registerComponent<engine::Collisions>();
     engine::ComponentsRegistry::instance().registerComponent<engine::Map>();
     engine::ComponentsRegistry::instance().registerComponent<engine::MapCell>();
-    // std::cout << "Components registered\n";
 
-    world = std::make_unique<engine::World>(20000, 10);
+    world_ = std::make_unique<engine::World>(20000, 15);
 
     std::vector<engine::ComponentID> mapType = {engine::getComponentID<engine::Map>()};
-    auto mapId = world->createEntity(mapType);
-    auto &map = world->getComponent<engine::Map>(mapId);
-    map.dim = {50, 50};
-    // std::cout << "engine::basePath: " << engine::basePath << '\n';
+    auto mapId = world_->createEntity(mapType);
+    auto &map = world_->getComponent<engine::Map>(mapId);
+    map.dim_ = {50, 50};
     engine::Terrain grass = {10, engine::basePath + "../assets/art/tiles/grass/tile_31.png"}, water = {10, engine::basePath + "../assets/art/tiles/water/tile_0.png"};
-    map.terrains.push_back(grass);
-    map.terrains.push_back(water);
+    map.terrains_.push_back(grass);
+    map.terrains_.push_back(water);
 
     std::vector<engine::ComponentID> camType = {engine::getComponentID<engine::Camera>(), engine::getComponentID<engine::Transform>(), engine::getComponentID<engine::Controller>(), engine::getComponentID<engine::Movement>(), engine::getComponentID<engine::BoxCollider>()};
-    auto camId = world->createEntity(camType);
-    auto &cam = world->getComponent<engine::Camera>(camId);
-    auto &camCollider = world->getComponent<engine::BoxCollider>(camId);
-    cam.height = (float)height / 20;
-    cam.width = (float)width / 20;
-    camCollider.height = 10.0f;
-    camCollider.width = 10.0f;
-    // std::cout << "Cam set\n";
+    auto camId = world_->createEntity(camType);
+    auto &cam = world_->getComponent<engine::Camera>(camId);
+    auto &camCollider = world_->getComponent<engine::BoxCollider>(camId);
+    cam.height_ = (float)height / 20;
+    cam.width_ = (float)width / 20;
+    camCollider.height_ = 5.0f;
+    camCollider.width_ = 5.0f;
 
-    renderer = std::make_unique<engine::RenderSys>(window);
-    movementSys = std::make_unique<engine::MovementSys>();
-    controllerSys = std::make_unique<engine::ControllerSys>();
-    collisionDetector = std::make_unique<engine::CollisionDetector>();
-    mapSys = std::make_unique<engine::MapSys>();
+    renderer_ = std::make_unique<engine::RenderSys>(window_);
+    movementSys_ = std::make_unique<engine::MovementSys>();
+    controllerSys_ = std::make_unique<engine::ControllerSys>();
+    collisionDetector_ = std::make_unique<engine::CollisionDetector>();
+    mapSys_ = std::make_unique<engine::MapSys>();
 
-    mapSys->init(*world);
-    renderer->init(*world);
-    movementSys->init(*world);
-    controllerSys->init(*world);
-    collisionDetector->init(*world);
+    mapSys_->init(*world_);
+    renderer_->init(*world_);
+    movementSys_->init(*world_);
+    controllerSys_->init(*world_);
+    collisionDetector_->init(*world_);
 }
 
 void Game::update()
 {
     engine::InputSys::getInstance().handleEvents();
     if (engine::InputSys::getInstance().isQuit())
-        running = false;
+        running_ = false;
 
-    controllerSys->update(*world);
-    movementSys->update(*world);
-    renderer->update(*world);
+    controllerSys_->update(*world_);
+    movementSys_->update(*world_);
+    collisionDetector_->update(*world_);
+    // mapSys->update(*world);
+    renderer_->update(*world_);
 }
 
 void Game::cleanup()
 {
-    SDL_GL_DeleteContext(glContext);
-    SDL_DestroyWindow(window);
+    SDL_GL_DeleteContext(glContext_);
+    SDL_DestroyWindow(window_);
     SDL_Quit();
 }

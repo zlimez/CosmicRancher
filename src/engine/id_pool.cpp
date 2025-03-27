@@ -2,16 +2,16 @@
 
 uint32_t IdPool::acquireId()
 {
-    if (!availableIds.empty())
+    if (!availableIds_.empty())
     {
-        uint32_t id = availableIds.front();
-        availableIds.pop();
+        uint32_t id = availableIds_.front();
+        availableIds_.pop();
         return id;
     }
-    return nextId++;
+    return nextId_++;
 }
 
 void IdPool::releaseId(uint32_t id)
 {
-    availableIds.push(id);
+    availableIds_.push(id);
 }

@@ -1,4 +1,5 @@
 #include "collision_detector.hpp"
+#include "../../utils/logger.hpp"
 
 namespace engine
 {
@@ -17,80 +18,100 @@ namespace engine
     Contact CollisionDetector::findSATCol(const std::vector<vec2> &poly1, const std::vector<vec2> &poly2)
     {
         Contact contact;
-        contact.depth = std::numeric_limits<float>::max();
-        contact.normal = {0.0f, 0.0f};
+        contact.depth_ = std::numeric_limits<float>::max();
+        contact.normal_ = {0.0f, 0.0f};
 
         for (size_t i = 0; i < poly1.size() + poly2.size(); i++)
         {
-            vec2 edge = i < poly1.size() ? poly1[(i + 1) % poly1.size()] - poly1[i] : poly2[(i + 1) % poly2.size()] - poly2[i];
+            size_t j = (i < poly1.size()) ? i : i - poly1.size();
+            vec2 edge = (i < poly1.size()) ? poly1[(j + 1) % poly1.size()] - poly1[j] : poly2[(j + 1) % poly2.size()] - poly2[j];
             vec2 axis = glm::normalize(vec2(-edge.y, edge.x));
             float minProj1, maxProj1, minProj2, maxProj2;
             projectPoly(poly1, axis, minProj1, maxProj1);
             projectPoly(poly2, axis, minProj2, maxProj2);
             float overlap = getOverlap(minProj1, maxProj1, minProj2, maxProj2);
-            if (overlap <= 0)
+            if (overlap <= 1e-6)
                 return contact;
-            if (overlap < contact.depth)
+            if (overlap < contact.depth_)
             {
-                contact.depth = overlap;
-                contact.normal = axis;
+                contact.depth_ = overlap;
+                contact.normal_ = axis;
             }
         }
 
+        contact.isColliding_ = true;
         return contact;
     }
 
     void CollisionDetector::setVertices(BoxCollider &collider, Transform &transform)
     {
-        float hw = collider.width / 2, hh = collider.height / 2;
-        collider.vertices[0] = {hw, hh};
-        collider.vertices[1] = {-hw, hh};
-        collider.vertices[2] = {-hw, -hh};
-        collider.vertices[3] = {hw, -hh};
+        float hw = collider.width_ / 2, hh = collider.height_ / 2;
+        collider.vertices_[0] = {hw, hh};
+        collider.vertices_[1] = {-hw, hh};
+        collider.vertices_[2] = {-hw, -hh};
+        collider.vertices_[3] = {hw, -hh};
 
-        float angle = glm::radians(transform.rotation);
+        float angle = glm::radians(transform.rotation_);
         glm::mat2 rotation = glm::mat2(glm::vec2(cos(angle), -sin(angle)), glm::vec2(sin(angle), cos(angle)));
 
-        for (auto &vertex : collider.vertices)
+        for (auto &vertex : collider.vertices_)
         {
             vertex = rotation * vertex;
-            vertex += transform.position;
+            vertex += transform.position_;
         }
+    }
+
+    void CollisionDetector::addCollision(Contact &contact, BoxCollider *col1, BoxCollider *col2, EntityID ent1, EntityID ent2)
+    {
+        currColEntities_.insert(ent1);
+        currColEntities_.insert(ent2);
+
+        Collision collision;
+        collision.isTrigger_ = col1->isTrigger_ || col2->isTrigger_;
+        collision.self_ = ent1;
+        collision.other_ = ent2;
+        collision.normal_ = contact.normal_;
+        collision.depth_ = contact.depth_;
+        collisions_.push_back(collision);
+        collision.self_ = ent2;
+        collision.other_ = ent1;
+        collisions_.push_back(collision);
     }
 
     void CollisionDetector::init(World &world) {}
 
     void CollisionDetector::update(World &world)
     {
-        staticColliders.clear();
-        dynamicColliders.clear();
+        staticColliders_.clear();
+        dynamicColliders_.clear();
+        collisions_.clear();
+        currColEntities_.clear();
 
         Type colliderType;
         colliderType.set(getComponentID<BoxCollider>());
         colliderType.set(getComponentID<Transform>());
         auto &colliderArchs = world.getArchetypesWith(colliderType);
-
         for (auto colliderArch : colliderArchs)
         {
             auto &colliderRow = colliderArch->getComponentRow<BoxCollider>();
             auto &tfmRow = colliderArch->getComponentRow<Transform>();
-            for (size_t i = 0; i < colliderArch->count; i++)
+            for (size_t i = 0; i < colliderArch->count_; i++)
             {
-                if (!colliderRow.blocks[i].active)
+                if (!colliderRow.blocks_[i].active_)
                     continue;
-                if (tfmRow.blocks[i].isStatic)
+                if (tfmRow.blocks_[i].isStatic_)
                 {
-                    staticColliders.push_back({colliderArch->indexToEntities[i], &colliderRow.blocks[i], &tfmRow.blocks[i]});
-                    if (!colliderRow.blocks[i].verticesSet)
+                    staticColliders_.push_back({colliderArch->indexToEntities_[i], &colliderRow.blocks_[i], &tfmRow.blocks_[i]});
+                    if (!colliderRow.blocks_[i].verticesSet_)
                     {
-                        setVertices(colliderRow.blocks[i], tfmRow.blocks[i]);
-                        colliderRow.blocks[i].verticesSet = true;
+                        setVertices(colliderRow.blocks_[i], tfmRow.blocks_[i]);
+                        colliderRow.blocks_[i].verticesSet_ = true;
                     }
                 }
                 else
                 {
-                    dynamicColliders.push_back({colliderArch->indexToEntities[i], &colliderRow.blocks[i], &tfmRow.blocks[i]});
-                    setVertices(colliderRow.blocks[i], tfmRow.blocks[i]);
+                    dynamicColliders_.push_back({colliderArch->indexToEntities_[i], &colliderRow.blocks_[i], &tfmRow.blocks_[i]});
+                    setVertices(colliderRow.blocks_[i], tfmRow.blocks_[i]);
                 }
             }
         }
@@ -101,66 +122,55 @@ namespace engine
         for (auto collisionsArch : collisionsArchs)
         {
             auto &collisionsRow = collisionsArch->getComponentRow<Collisions>();
-            for (size_t i = 0; i < collisionsArch->count; i++)
-                collisionsRow.blocks[i].collisions.clear();
+            for (size_t i = 0; i < collisionsArch->count_; i++)
+                collisionsRow.blocks_[i].collisions_.clear();
         }
 
-        for (size_t i = 0; i < dynamicColliders.size(); i++)
+        for (size_t i = 0; i < dynamicColliders_.size(); i++)
         {
-            auto &[dynEntity, dynCollider, dynTfm] = dynamicColliders[i];
-            for (auto &[statEntity, statCollider, statTfm] : staticColliders)
+            auto &[dynEntity, dynCollider, dynTfm] = dynamicColliders_[i];
+            for (auto &[statEntity, statCollider, statTfm] : staticColliders_)
             {
-                Contact contact = findSATCol(dynCollider->vertices, statCollider->vertices);
-                if (contact.isColliding)
-                {
-                    currCollidedEntities.insert(statEntity);
-                    currCollidedEntities.insert(dynEntity);
-
-                    Collision collision;
-                    collision.isTrigger = dynCollider->isTrigger || statCollider->isTrigger;
-                    collision.otherEntity = statEntity;
-                    collision.normal = contact.normal;
-                    collision.depth = contact.depth;
-
-                    world.addComponent<Collisions>(dynEntity).collisions.push_back(collision);
-                    world.addComponent<Collisions>(statEntity).collisions.push_back(collision);
-                }
+                Contact contact = findSATCol(dynCollider->vertices_, statCollider->vertices_);
+                if (contact.isColliding_)
+                    addCollision(contact, statCollider, dynCollider, statEntity, dynEntity);
             }
-            for (int j = i + 1; j < dynamicColliders.size(); j++)
+            for (int j = i + 1; j < dynamicColliders_.size(); j++)
             {
-                auto &[dynEntity2, dynCollider2, dynTfm2] = dynamicColliders[j];
-                Contact contact = findSATCol(dynCollider->vertices, dynCollider2->vertices);
-                if (contact.isColliding)
-                {
-                    currCollidedEntities.insert(dynEntity);
-                    currCollidedEntities.insert(dynEntity2);
-
-                    Collision collision;
-                    collision.isTrigger = dynCollider->isTrigger || dynCollider2->isTrigger;
-                    collision.otherEntity = dynEntity2;
-                    collision.normal = contact.normal;
-                    collision.depth = contact.depth;
-
-                    world.addComponent<Collisions>(dynEntity).collisions.push_back(collision);
-                    world.addComponent<Collisions>(dynEntity2).collisions.push_back(collision);
-                }
+                auto &[dynEntity2, dynCollider2, dynTfm2] = dynamicColliders_[j];
+                Contact contact = findSATCol(dynCollider->vertices_, dynCollider2->vertices_);
+                if (contact.isColliding_)
+                    addCollision(contact, dynCollider, dynCollider2, dynEntity, dynEntity2);
             }
         }
+
+        // NOTE: DO NOT addComponent with the detection segment will invalidate the pointers due to archetype change
+        for (EntityID colEntity : currColEntities_)
+            world.addComponent<Collisions>(colEntity);
+
+        if (!currColEntities_.empty())
+        {
+            for (auto e : currColEntities_)
+                std::cout << e << ' ';
+            std::cout << '\n';
+        }
+
+        for (Collision &collision : collisions_)
+            world.getComponent<Collisions>(collision.self_).collisions_.emplace_back(collision);
 
         // TODO: A better heuristic for removing collisions component (expensive)
-        for (EntityID lastCollidedEntity : lastCollidedEntities)
-            if (!currCollidedEntities.count(lastCollidedEntity))
-                world.removeComponent<Collisions>(lastCollidedEntity);
+        // for (EntityID lastColEntity : lastColEntities_)
+        //     if (!currColEntities_.count(lastColEntity))
+        //         world.removeComponent<Collisions>(lastColEntity);
 
-        swap(lastCollidedEntities, currCollidedEntities);
-        currCollidedEntities.clear();
+        swap(lastColEntities_, currColEntities_);
     }
 
     void CollisionDetector::cleanup()
     {
-        lastCollidedEntities.clear();
-        currCollidedEntities.clear();
-        staticColliders.clear();
-        dynamicColliders.clear();
+        lastColEntities_.clear();
+        currColEntities_.clear();
+        staticColliders_.clear();
+        dynamicColliders_.clear();
     }
 }

@@ -14,15 +14,15 @@ namespace engine
             auto &maps = mapArch->getComponentRow<engine::Map>();
 
             // NOTE: assumes one map for now, layer can be added later
-            auto &map = maps.blocks[0];
-            auto [n, m] = map.dim;
-            std::vector<std::pair<int, int>> terrainSeeds(map.terrains.size());
-            std::vector<std::string> terrainSprites(map.terrains.size());
+            auto &map = maps.blocks_[0];
+            auto [n, m] = map.dim_;
+            std::vector<std::pair<int, int>> terrainSeeds(map.terrains_.size());
+            std::vector<std::string> terrainSprites(map.terrains_.size());
 
-            for (int i = 0; i < map.terrains.size(); i++)
+            for (int i = 0; i < map.terrains_.size(); i++)
             {
-                terrainSeeds[i] = {i, map.terrains[i].count};
-                terrainSprites[i] = map.terrains[i].spriteFile;
+                terrainSeeds[i] = {i, map.terrains_[i].count_};
+                terrainSprites[i] = map.terrains_[i].spriteFile_;
             }
 
             auto base = map::voronoi({2 * n, 2 * m}, terrainSeeds);
@@ -37,91 +37,97 @@ namespace engine
                     auto &transform = world.getComponent<engine::Transform>(entity);
                     auto &cell = world.getComponent<engine::MapCell>(entity);
 
-                    sprite.texture.filePath = terrainSprites[base[i][j]];
-                    sprite.vertices = map.cellVertices;
-                    sprite.indices = {0, 1, 2, 2, 3, 0};
-                    sprite.shaderParts = {engine::basePath + "../src/graphics/shaders/tex_vtx.glsl", engine::basePath + "../src/graphics/shaders/tex_frag.glsl"};
+                    sprite.texture_.filePath = terrainSprites[base[i][j]];
+                    sprite.vertices_ = map.cellVertices_;
+                    sprite.indices_ = {0, 1, 2, 2, 3, 0};
+                    sprite.shaderParts_ = {engine::basePath + "../src/graphics/shaders/tex_vtx.glsl", engine::basePath + "../src/graphics/shaders/tex_frag.glsl"};
 
-                    transform.position = {j - m, i - n};
-                    transform.isStatic = true;
+                    transform.position_ = {j - m, i - n};
+                    transform.isStatic_ = true;
 
-                    cell.pos = {j, i};
+                    cell.pos_ = {j, i};
                 }
             }
 
-            rpt = 2 * m - 1;
-            tpt = 2 * n - 1;
-            mw = 2 * m;
-            mh = 2 * n;
+            rpt_ = 2 * m - 1;
+            tpt_ = 2 * n - 1;
+            mw_ = 2 * m;
+            mh_ = 2 * n;
             break;
         }
 
         // NOTE: Assume player at 0,0 when placing triggers
         std::vector<engine::ComponentID> triggerType = {engine::getComponentID<engine::BoxCollider>(), engine::getComponentID<engine::Transform>()};
-        const float offset = 20.0f; // NOTE: should depend on camera zoom surrounds the play such that the map infinitely extends and wraps around
-        float height = offset * 2, width = 10.0f;
+        // NOTE: should depend on camera zoom surrounds the play such that the map infinitely extends and wraps around
+        float height = offset_ * 2, width = 10.0f;
         std::vector<std::tuple<float, float, vec2>> triggers = {
-            {height, width, {offset, 0.0f}},   // right
-            {height, width, {-offset, 0.0f}},  // left
-            {width, height, {0.0f, offset}},   // top
-            {width, height, {0.0f, -offset}}}; // bottom
+            {height, width, {offset_, 0.0f}},   // right
+            {height, width, {-offset_, 0.0f}},  // left
+            {width, height, {0.0f, offset_}},   // top
+            {width, height, {0.0f, -offset_}}}; // bottom
 
         for (size_t i = 0; i < 4; i++)
         {
             EntityID triggerId = world.createEntity(triggerType);
-            retileTriggers[i] = triggerId;
+            retileTriggers_[i] = triggerId;
             auto &trigger = world.getComponent<engine::BoxCollider>(triggerId);
             auto &transform = world.getComponent<engine::Transform>(triggerId);
-            trigger.height = std::get<0>(triggers[i]);
-            trigger.width = std::get<1>(triggers[i]);
-            transform.position = std::get<2>(triggers[i]);
-            transform.isStatic = true;
-            trigger.isTrigger = true;
+            trigger.height_ = std::get<0>(triggers[i]);
+            trigger.width_ = std::get<1>(triggers[i]);
+            transform.position_ = std::get<2>(triggers[i]);
+            transform.isStatic_ = true;
+            trigger.isTrigger_ = true;
         }
     }
 
     void MapSys::update(engine::World &world)
     {
-        const int shiftSize = 20; // NOTE: should match offset
-
         int miny = -1, maxy = -1, minx = -1, maxx = -1;
         bool ywraps = false, xwraps = false;
-        int yshift = mh, xshift = mw;
+        int yshift = mh_, xshift = mw_;
+        std::vector<Transform *> triggerTfms(4);
         // NOTE: Temp assume all collisions are with player
         for (size_t i = 0; i < 4; i++)
         {
-            if (!world.hasComponent<engine::Collisions>(retileTriggers[i]))
+            if (!world.hasComponent<engine::Collisions>(retileTriggers_[i]))
                 continue;
+            triggerTfms[i] = &world.getComponent<engine::Transform>(retileTriggers_[i]);
             if (i == 0)
             {
-                minx = lpt;
-                maxx = (minx + shiftSize) % mw;
+                minx = lpt_;
+                maxx = (minx + offset_) % mw_;
                 xwraps = maxx < minx;
-                lpt = maxx;
+                lpt_ = maxx;
             }
             else if (i == 1)
             {
-                maxx = (rpt + 1) % mw;
-                minx = (maxx - shiftSize + mw) % mw;
+                maxx = (rpt_ + 1) % mw_;
+                minx = (maxx - offset_ + mw_) % mw_;
                 xwraps = maxx < minx;
-                rpt = (minx - 1) % mw;
+                rpt_ = (minx - 1) % mw_;
                 xshift = -xshift;
             }
             else if (i == 2)
             {
-                miny = bpt;
-                maxy = (miny + shiftSize) % mh;
+                miny = bpt_;
+                maxy = (miny + offset_) % mh_;
                 ywraps = maxy < miny;
-                bpt = maxy;
+                bpt_ = maxy;
             }
             else
             {
-                maxy = (tpt + 1) % mh;
-                miny = (maxy - shiftSize + mh) % mh;
+                maxy = (tpt_ + 1) % mh_;
+                miny = (maxy - offset_ + mh_) % mh_;
                 ywraps = maxy < miny;
-                tpt = (miny - 1) % mh;
+                tpt_ = (miny - 1) % mh_;
                 yshift = -yshift;
             }
+        }
+
+        for (auto &triggerTfm : triggerTfms)
+        {
+            triggerTfm->position_.x += xshift;
+            triggerTfm->position_.y += yshift;
         }
 
         Type mapCellType;
@@ -133,17 +139,17 @@ namespace engine
         {
             auto &mapCells = mapCellArch->getComponentRow<engine::MapCell>();
             auto &transforms = mapCellArch->getComponentRow<engine::Transform>();
-            for (size_t i = 0; i < mapCellArch->count; i++)
+            for (size_t i = 0; i < mapCellArch->count_; i++)
             {
-                auto &mapCell = mapCells.blocks[i];
-                auto &transform = transforms.blocks[i];
+                auto &mapCell = mapCells.blocks_[i];
+                auto &transform = transforms.blocks_[i];
                 if (minx != -1 &&
-                    ((!xwraps && minx <= mapCell.pos.first && mapCell.pos.first < maxx) || (xwraps && (minx <= mapCell.pos.first || mapCell.pos.first < maxx))))
-                    transform.position.x += xshift;
+                    ((!xwraps && minx <= mapCell.pos_.first && mapCell.pos_.first < maxx) || (xwraps && (minx <= mapCell.pos_.first || mapCell.pos_.first < maxx))))
+                    transform.position_.x += xshift;
 
                 if (miny != -1 &&
-                    ((!ywraps && miny <= mapCell.pos.second && mapCell.pos.second < maxy) || (ywraps && (miny <= mapCell.pos.second || mapCell.pos.second < maxy))))
-                    transform.position.y += yshift;
+                    ((!ywraps && miny <= mapCell.pos_.second && mapCell.pos_.second < maxy) || (ywraps && (miny <= mapCell.pos_.second || mapCell.pos_.second < maxy))))
+                    transform.position_.y += yshift;
             }
         }
     }

@@ -17,20 +17,20 @@
 class Game
 {
 private:
-    bool running = false;
-    SDL_Window *window;
-    SDL_GLContext glContext;
-    std::unique_ptr<engine::World> world;
-    std::unique_ptr<engine::RenderSys> renderer;
-    std::unique_ptr<engine::MapSys> mapSys;
-    std::unique_ptr<engine::MovementSys> movementSys;
-    std::unique_ptr<engine::ControllerSys> controllerSys;
-    std::unique_ptr<engine::CollisionDetector> collisionDetector;
+    bool running_ = false;
+    SDL_Window *window_;
+    SDL_GLContext glContext_;
+    std::unique_ptr<engine::World> world_;
+    std::unique_ptr<engine::RenderSys> renderer_;
+    std::unique_ptr<engine::MapSys> mapSys_;
+    std::unique_ptr<engine::MovementSys> movementSys_;
+    std::unique_ptr<engine::ControllerSys> controllerSys_;
+    std::unique_ptr<engine::CollisionDetector> collisionDetector_;
 
 public:
     void init(const char *title, int width, int height, bool fullscreen);
     void update();
     void cleanup();
 
-    bool isRunning() { return running; }
+    bool isRunning() { return running_; }
 };

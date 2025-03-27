@@ -12,13 +12,13 @@ namespace engine
             switch (event.type)
             {
             case SDL_QUIT:
-                quit = true;
+                quit_ = true;
                 break;
             case SDL_KEYDOWN:
-                keyStates[event.key.keysym.sym] = KeyState::DOWN;
+                keyStates_[event.key.keysym.sym] = KeyState::DOWN;
                 break;
             case SDL_KEYUP:
-                keyStates[event.key.keysym.sym] = KeyState::UP;
+                keyStates_[event.key.keysym.sym] = KeyState::UP;
                 break;
             }
         }

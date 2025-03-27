@@ -7,14 +7,14 @@ namespace engine
 {
     struct Transform : Component
     {
-        bool isStatic = false;
-        vec2 position = {0.0f, 0.0f};
-        vec2 scale = {1.0f, 1.0f};
-        float rotation = 0.0f;
+        bool isStatic_ = false;
+        vec2 position_ = {0.0f, 0.0f};
+        vec2 scale_ = {1.0f, 1.0f};
+        float rotation_ = 0.0f;
     };
 
     struct Movement : Component
     {
-        vec2 velocity = {0.0f, 0.0f};
+        vec2 velocity_ = {0.0f, 0.0f};
     };
 }

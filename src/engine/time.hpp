@@ -3,6 +3,6 @@
 class Time
 {
 public:
-    static float deltaTime;
-    static float fixedDeltaTime;
+    static float deltaTime_;
+    static float fixedDeltaTime_;
 };

@@ -27,29 +27,29 @@ namespace engine
     // NOTE: For now one sprite per entity, default stretch the texture to the sprite size
     struct Sprite : Component
     {
-        std::vector<Vertex> vertices;
-        std::vector<uint32> indices;
-        Texture texture;
-        ShaderParts shaderParts;
-        graphics::Shader shader;
-        bool flipX = false, flipY = false;
+        std::vector<Vertex> vertices_;
+        std::vector<uint32> indices_;
+        Texture texture_;
+        ShaderParts shaderParts_;
+        graphics::Shader shader_;
+        bool flipX_ = false, flipY_ = false;
         uint32 order = 0;
-        uint32 vao = 0, vbo = 0, ebo = 0;
+        uint32 vao_ = 0, vbo_ = 0, ebo_ = 0;
 
         Sprite &operator=(const Sprite &other) noexcept
         {
             if (this != &other)
             {
-                vertices = std::move(other.vertices);
-                texture = other.texture;
-                shaderParts = other.shaderParts;
-                shader = other.shader;
-                flipX = other.flipX;
-                flipY = other.flipY;
+                vertices_ = std::move(other.vertices_);
+                texture_ = other.texture_;
+                shaderParts_ = other.shaderParts_;
+                shader_ = other.shader_;
+                flipX_ = other.flipX_;
+                flipY_ = other.flipY_;
                 order = other.order;
-                vao = other.vao;
-                vbo = other.vbo;
-                ebo = other.ebo;
+                vao_ = other.vao_;
+                vbo_ = other.vbo_;
+                ebo_ = other.ebo_;
             }
 
             return *this;
@@ -57,12 +57,12 @@ namespace engine
 
         ~Sprite()
         {
-            if (vao)
-                glDeleteVertexArrays(1, &vao);
-            if (vbo)
-                glDeleteBuffers(1, &vbo);
-            if (ebo)
-                glDeleteBuffers(1, &ebo);
+            if (vao_)
+                glDeleteVertexArrays(1, &vao_);
+            if (vbo_)
+                glDeleteBuffers(1, &vbo_);
+            if (ebo_)
+                glDeleteBuffers(1, &ebo_);
         }
     };
 };

@@ -14,7 +14,7 @@ int main()
         Uint32 currentTime = SDL_GetTicks();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
-        Time::deltaTime = deltaTime;
+        Time::deltaTime_ = deltaTime;
 
         game.update();
     }

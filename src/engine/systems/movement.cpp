@@ -13,11 +13,11 @@ namespace engine
         {
             auto &transformRow = movingArch->getComponentRow<Transform>();
             auto &movementRow = movingArch->getComponentRow<Movement>();
-            for (size_t i = 0; i < movingArch->count; i++)
+            for (size_t i = 0; i < movingArch->count_; i++)
             {
-                auto &transform = transformRow.blocks[i];
-                auto &movement = movementRow.blocks[i];
-                transform.position += movement.velocity * Time::deltaTime;
+                auto &transform = transformRow.blocks_[i];
+                auto &movement = movementRow.blocks_[i];
+                transform.position_ += movement.velocity_ * Time::deltaTime_;
             }
         }
     }
